@@ -1,0 +1,129 @@
+services:
+  # DATABASES
+  user-db:
+    image: postgres:15-alpine
+    container_name: quickbite-user-db
+    environment:
+      POSTGRES_DB: user_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - user_data:/var/lib/postgresql/data
+    networks:
+      - quickbite-net
+    restart: unless-stopped
+
+  restaurant-db:
+    image: postgres:15-alpine
+    container_name: quickbite-restaurant-db
+    environment:
+      POSTGRES_DB: restaurant_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - restaurant_data:/var/lib/postgresql/data
+    networks:
+      - quickbite-net
+    restart: unless-stopped
+
+  order-db:
+    image: postgres:15-alpine
+    container_name: quickbite-order-db
+    environment:
+      POSTGRES_DB: order_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - order_data:/var/lib/postgresql/data
+    networks:
+      - quickbite-net
+    restart: unless-stopped
+
+  notification-db:
+    image: postgres:15-alpine
+    container_name: quickbite-notification-db
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - notification_data:/var/lib/postgresql/data
+    networks:
+      - quickbite-net
+    restart: unless-stopped
+
+  # BACKEND SERVICES
+  quickbite-user:
+    image: quickbite-user-service:latest
+    container_name: quickbite-user
+    ports:
+      - "8081:8081"
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-db:5432/user_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    depends_on:
+      - user-db
+    networks:
+      - quickbite-net
+    restart: unless-stopped
+
+  quickbite-restaurant:
+    image: quickbite-restaurant-service:latest
+    container_name: quickbite-restaurant
+    ports:
+      - "8082:8082"
+    environment:
+      SERVER_PORT: 8082
+      SPRING_DATASOURCE_URL: jdbc:postgresql://restaurant-db:5432/restaurant_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    depends_on:
+      - restaurant-db
+    networks:
+      - quickbite-net
+    restart: unless-stopped
+
+  quickbite-order:
+    image: quickbite-order-service:latest
+    container_name: quickbite-order
+    ports:
+      - "8083:8083"
+    environment:
+      SERVER_PORT: 8083
+      SPRING_DATASOURCE_URL: jdbc:postgresql://order-db:5432/order_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    depends_on:
+      - order-db
+    networks:
+      - quickbite-net
+    restart: unless-stopped
+
+  quickbite-notification:
+    image: quickbite-notification-service:latest
+    container_name: quickbite-notification
+    ports:
+      - "8084:8084"
+    environment:
+      SERVER_PORT: 8084
+      SPRING_DATASOURCE_URL: jdbc:postgresql://notification-db:5432/notification_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    depends_on:
+      - notification-db
+    networks:
+      - quickbite-net
+    restart: unless-stopped
+
+volumes:
+  user_data:
+  restaurant_data:
+  order_data:
+  notification_data:
+
+networks:
+  quickbite-net:
+    external: true
+    name: quickbite-net
